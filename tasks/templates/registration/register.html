@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2 class="text-3xl font-bold mb-6 text-center">Register</h2>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label for="id_username" class="block text-sm">Username</label>
+            <input type="text" name="username" id="id_username" class="w-full p-2 bg-transparent border-b border-white text-white" required>
+        </div>
+        <div>
+            <label for="id_email" class="block text-sm">Email</label>
+            <input type="email" name="email" id="id_email" class="w-full p-2 bg-transparent border-b border-white text-white" required>
+        </div>
+        <div>
+            <label for="id_password1" class="block text-sm">Password</label>
+            <input type="password" name="password1" id="id_password1" class="w-full p-2 bg-transparent border-b border-white text-white" required>
+        </div>
+        <div>
+            <label for="id_password2" class="block text-sm">Confirm Password</label>
+            <input type="password" name="password2" id="id_password2" class="w-full p-2 bg-transparent border-b border-white text-white" required>
+        </div>
+        {% if form.errors %}
+            <span class="text-red-200 text-sm">{{ form.errors }}</span>
+        {% endif %}
+        <button type="submit" class="w-full bg-white text-purple-900 p-2 rounded-full mt-4">Registrarse</button>
+    </form>
+    <p class="text-center mt-4">Already have an account? <a href="{% url 'login' %}" class="text-blue-200">Login</a></p>
+{% endblock %}

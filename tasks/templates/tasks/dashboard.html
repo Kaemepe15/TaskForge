@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2 class="text-3xl font-bold mb-6 text-center">Mis Tareas</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for task in tasks %}
+            <div class="translucent-card p-4 rounded shadow">
+                <h3 class="text-lg font-semibold">{{ task.title }}</h3>
+                <p class="text-gray-200">{{ task.description }}</p>
+                <p class="text-sm text-gray-400">Estado: {{ task.status }}</p>
+                <p class="text-sm text-gray-400">Vence: {{ task.due_date }}</p>
+            </div>
+        {% empty %}
+            <p class="text-center text-gray-200">No hay tareas.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

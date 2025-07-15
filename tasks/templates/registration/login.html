@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2 class="text-3xl font-bold mb-6 text-center">Login</h2>
+    {% if form.errors %}
+        <p class="text-red-200 mb-4">Usuario o contraseña incorrectos.</p>
+    {% endif %}
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label for="id_username" class="block text-sm">Username</label>
+            <input type="text" name="username" id="id_username" class="w-full p-2 bg-transparent border-b border-white text-white" required>
+        </div>
+        <div>
+            <label for="id_password" class="block text-sm">Password</label>
+            <input type="password" name="password" id="id_password" class="w-full p-2 bg-transparent border-b border-white text-white" required>
+        </div>
+        <div class="flex justify-between text-sm">
+            <label><input type="checkbox" name="remember_me"> Remember me</label>
+            <a href="{% url 'password_reset' %}" class="text-blue-200">Forgot password?</a>
+        </div>
+        <button type="submit" class="w-full bg-white text-purple-900 p-2 rounded-full mt-4">Login</button>
+    </form>
+    <p class="text-center mt-4">Don't have an account? <a href="{% url 'register' %}" class="text-blue-200">Register</a></p>
+{% endblock %}
