@@ -124,7 +124,14 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Redirección cuando cierran la sesión
 LOGOUT_REDIRECT_URL = '/'
 
+
+# Configuración de 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+#Configuración del correo para el reestablecimiento de contraseñas
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'      # Para desarrollo
+DEFAULT_FROM_EMAIL = 'ketzypitty@gmail.com'                           # Correo de uno de los admins
