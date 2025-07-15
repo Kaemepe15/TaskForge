@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2 class="text-3xl font-bold mb-6 text-center">Eliminar Tarea</h2>
+    <p class="text-center text-gray-200 mb-4">¿Estás seguro de que quieres eliminar "{{ task.title }}"?</p>
+    <form method="post" class="max-w-md mx-auto">
+        {% csrf_token %}
+        <button type="submit" class="w-full bg-red-500 text-white p-2 rounded-full mt-4">Eliminar</button>
+        <a href="{% url 'dashboard' %}" class="block text-center text-blue-200 mt-2">Cancelar</a>
+    </form>
+{% endblock %}

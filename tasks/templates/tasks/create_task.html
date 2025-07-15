@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2 class="text-3xl font-bold mb-6 text-center">Crear Nueva Tarea</h2>
+    <form method="post" class="space-y-4 max-w-md mx-auto">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="w-full bg-white text-purple-900 p-2 rounded-full mt-4">Crear Tarea</button>
+        <a href="{% url 'dashboard' %}" class="block text-center text-blue-200 mt-2">Cancelar</a>
+    </form>
+    <style>
+        .translucent-card label {
+            color: #D1D5DB; /* Gris claro para etiquetas */
+        }
+        .translucent-card input,
+        .translucent-card textarea,
+        .translucent-card select {
+            color: #D1D5DB; /* Gris claro para texto ingresado */
+            background-color: rgba(0, 0, 0, 0.2); /* Fondo oscuro ligero para mayor contraste */
+            border-color: #D1D5DB; /* Borde gris claro */
+            border-radius: 4px; /* Bordes redondeados suaves */
+            padding: 0.5rem;
+        }
+        .translucent-card input:focus,
+        .translucent-card textarea:focus,
+        .translucent-card select:focus {
+            outline: none;
+            border-color: #93C5FD; /* Azul claro para foco (text-blue-300) */
+            box-shadow: 0 0 5px rgba(147, 197, 253, 0.5);
+        }
+        .translucent-card input::placeholder,
+        .translucent-card textarea::placeholder {
+            color: #9CA3AF; /* Gris más oscuro para placeholder (text-gray-400) */
+        }
+    </style>
+{% endblock %}

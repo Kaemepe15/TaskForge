@@ -1,16 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2 class="text-3xl font-bold mb-6 text-center">Mis Tareas</h2>
+    <div class="mb-6 text-center">
+        <a href="{% url 'create_task' %}" class="bg-white text-purple-900 p-2 rounded-full inline-block">Crear Nueva Tarea</a>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for task in tasks %}
             <div class="translucent-card p-4 rounded shadow">
                 <h3 class="text-lg font-semibold">{{ task.title }}</h3>
                 <p class="text-gray-200">{{ task.description }}</p>
                 <p class="text-sm text-gray-400">Estado: {{ task.status }}</p>
-                <p class="text-sm text-gray-400">Vence: {{ task.due_date }}</p>
+                <p class="text-sm text-gray-400">Vence: {{ task.due_date|date:"F d, Y" }}</p>
+                <div class="mt-2">
+                    <a href="{% url 'edit_task' task.id %}" class="text-blue-200 mr-2">Editar</a>
+                    <a href="{% url 'delete_task' task.id %}" class="text-red-200">Eliminar</a>
+                </div>
             </div>
         {% empty %}
             <p class="text-center text-gray-200">No hay tareas.</p>
         {% endfor %}
     </div>
+    <style>
+        .translucent-card label {
+            color: #D1D5DB; /* Gris claro para etiquetas */
+        }
+        .translucent-card input,
+        .translucent-card textarea,
+        .translucent-card select {
+            color: #D1D5DB; /* Gris claro para texto ingresado */
+            background-color: rgba(0, 0, 0, 0.2); /* Fondo oscuro ligero para mayor contraste */
+            border-color: #D1D5DB; /* Borde gris claro */
+            border-radius: 4px; /* Bordes redondeados suaves */
+            padding: 0.5rem;
+        }
+        .translucent-card input:focus,
+        .translucent-card textarea:focus,
+        .translucent-card select:focus {
+            outline: none;
+            border-color: #93C5FD; /* Azul claro para foco (text-blue-300) */
+            box-shadow: 0 0 5px rgba(147, 197, 253, 0.5);
+        }
+        .translucent-card input::placeholder,
+        .translucent-card textarea::placeholder {
+            color: #9CA3AF; /* Gris más oscuro para placeholder (text-gray-400) */
+        }
+    </style>
 {% endblock %}

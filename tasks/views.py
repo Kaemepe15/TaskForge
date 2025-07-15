@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from .models import Task
 from django.contrib.auth.views import (
@@ -24,10 +24,45 @@ class CustomLogoutView(LogoutView):
 def home(request):
     return render(request, 'tasks/home.html')
 
+# Dashboard
+
 @login_required
 def dashboard(request):
     tasks = Task.objects.filter(user=request.user)
     return render(request, 'tasks/dashboard.html', {'tasks': tasks})
+
+@login_required
+def create_task(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
+            task.save()
+            return redirect('dashboard')
+    else:
+        form = TaskForm()
+    return render(request, 'tasks/create_task.html', {'form': form})
+
+@login_required
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = TaskForm(instance=task)
+    return render(request, 'tasks/edit_task.html', {'form': form, 'task': task})
+
+@login_required
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    if request.method == 'POST':
+        task.delete()
+        return redirect('dashboard')
+    return render(request, 'tasks/delete_task.html', {'task': task})
 
 def register(request):
     if request.method == "POST":
