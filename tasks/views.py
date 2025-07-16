@@ -9,6 +9,7 @@ from django.contrib.auth.views import (
 )
 from django.urls import reverse_lazy
 import time
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -31,6 +32,7 @@ def home(request):
 def dashboard(request):
     tasks = Task.objects.filter(user=request.user)
     notifications = []
+    unread_count = 0
 
     current_datetime = time.strftime('%Y-%m-%dT%H:%M')
     print(f"Current datetime: {current_datetime}")  # Depuración
@@ -45,13 +47,28 @@ def dashboard(request):
                 task=task,
                 defaults={'message': f'La tarea "{task.title}" vence en menos de 24 horas.'}
             )
-            if created:
+            if created or not notification.is_read:
                 notifications.append(notification)
-            else:
-                notifications.append(notification)  # Añadir incluso si ya existe para mostrarla
-            print(f"Notification created/added for {task.title}")  # Depuración
+                if not notification.is_read:
+                    unread_count += 1
+            print(f"Notification created/added for {task.title}, is_read: {notification.is_read}")  # Depuración
 
-    return render(request, 'tasks/dashboard.html', {'tasks': tasks, 'notifications': notifications})
+    return render(request, 'tasks/dashboard.html', {
+        'tasks': tasks,
+        'notifications': notifications,
+        'unread_count': unread_count
+    })
+
+# ... (código previo) ...
+
+@login_required
+def mark_notification_as_read(request, notification_id):
+    if request.method == 'POST':
+        notification = get_object_or_404(Notification, id=notification_id, task__user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
 
 @login_required
 def create_task(request):

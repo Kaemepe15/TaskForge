@@ -7,19 +7,22 @@
         <!-- Botón de notificaciones -->
         <button id="notification-bell" class="bg-white text-purple-900 p-2 rounded-full inline-block ml-2 relative">
             <span class="bell-icon"></span>
-            {% if notifications|length > 0 %}
-                <span class="notification-dot"></span>
+            {% if unread_count > 0 %}
+                <span class="notification-dot">{{ unread_count }}</span>
             {% endif %}
         </button>
     </div>
 
     <!-- Cuadro de notificaciones -->
     <div id="notification-panel" class="hidden absolute right-4 top-16 bg-gray-800 text-white p-4 rounded shadow-lg w-64 z-10">
-        <h3 class="text-lg font-semibold mb-2">Notificaciones</h3>
+        <h3 class="text-lg font-semibold mb-2">Notificaciones <span id="unread-count-panel">{{ unread_count }}</span></h3>
         {% if notifications %}
-            <ul class="list-disc pl-5 space-y-2">
+            <ul id="notification-list" class="list-disc pl-5 space-y-2">
                 {% for notification in notifications %}
-                    <li>{{ notification.message }}</li>
+                    <li data-id="{{ notification.id }}" class="notification-item">
+                        {{ notification.message }}
+                        <button class="mark-read-btn text-sm text-blue-200 ml-2" data-id="{{ notification.id }}">Marcar como leída</button>
+                    </li>
                 {% endfor %}
             </ul>
         {% else %}
@@ -71,12 +74,17 @@
         }
         .notification-dot {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 16px;
+            height: 16px;
             background-color: red;
             border-radius: 50%;
-            top: 2px;
-            right: 2px;
+            top: -4px;
+            right: -4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
         }
         #notification-panel {
             border: 1px solid #4A5568;
@@ -84,19 +92,51 @@
         #notification-panel ul li {
             margin-bottom: 0.5rem;
         }
+        .mark-read-btn:hover {
+            text-decoration: underline;
+        }
     </style>
     <script>
         document.getElementById('notification-bell').addEventListener('click', function() {
             const panel = document.getElementById('notification-panel');
             panel.classList.toggle('hidden');
         });
-        // Ocultar el panel si se hace clic fuera
+
         document.addEventListener('click', function(event) {
             const bell = document.getElementById('notification-bell');
             const panel = document.getElementById('notification-panel');
             if (!bell.contains(event.target) && !panel.contains(event.target)) {
                 panel.classList.add('hidden');
             }
+        });
+
+        // Marcar notificación como leída
+        document.querySelectorAll('.mark-read-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const notificationId = this.getAttribute('data-id');
+                fetch(`/mark_notification_as_read/${notificationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({}),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.parentElement.style.display = 'none'; // Ocultar la notificación
+                        let unreadCount = document.querySelector('.notification-dot');
+                        let count = parseInt(unreadCount ? unreadCount.textContent : 0) - 1;
+                        if (unreadCount && count > 0) {
+                            unreadCount.textContent = count;
+                        } else if (unreadCount) {
+                            unreadCount.remove();
+                        }
+                        document.getElementById('unread-count-panel').textContent = count;
+                    }
+                });
+            });
         });
     </script>
 {% endblock %}
