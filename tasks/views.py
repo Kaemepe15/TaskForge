@@ -8,7 +8,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView, PasswordResetCompleteView
 )
 from django.urls import reverse_lazy
-import time
+import time, json
 from django.http import JsonResponse
 
 # Create your views here.
@@ -126,6 +126,30 @@ def create_tag(request):
     else:
         form = TagForm()
     return render(request, 'tasks/create_tag.html', {'form': form})
+
+@login_required
+def update_task_status(request, task_id):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        task = get_object_or_404(Task, id=task_id, user=request.user)
+        print(f"Recibido: task_id={task_id}, request.POST={request.POST}, request.body={request.body.decode('utf-8')}")  # Depuración
+        # Parsear el cuerpo JSON manualmente
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+            new_status_label = body.get('status')
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Cuerpo de la petición no válido'}, status=400)
+        # Mapeo de etiquetas a valores internos
+        status_map = {
+            'Pendiente': 'pending',
+            'En Progreso': 'in_progress',
+            'Completada': 'completed'
+        }
+        if new_status_label in status_map:
+            task.status = status_map[new_status_label]
+            task.save()
+            return JsonResponse({'success': True, 'status': new_status_label})  # Devuelve la etiqueta
+        return JsonResponse({'success': False, 'error': 'Estado no válido'}, status=400)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
 def register(request):
     if request.method == "POST":

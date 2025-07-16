@@ -37,7 +37,12 @@
                 <h3 class="text-lg font-semibold">{{ task.title }}</h3>
                 <p class="text-gray-200">{{ task.description }}</p>
                 <p class="text-sm text-gray-400">Estado: {{ task.status }}</p>
-                <p class="text-sm text-gray-400">Vence: {{ task.due_date|date:"F d, Y" }}</p>
+                <select class="status-select bg-gray-800 text-white p-1 rounded mt-2" data-task-id="{{ task.id }}">
+                    <option value="Pendiente" {% if task.status == 'pending' %}selected{% endif %}>Pendiente</option>
+                    <option value="En Progreso" {% if task.status == 'in_progress' %}selected{% endif %}>En Progreso</option>
+                    <option value="Completada" {% if task.status == 'completed' %}selected{% endif %}>Completada</option>
+                </select>
+                <p class="text-sm text-gray-400">Vence: {{ due_date|date:"F d, Y" }}</p>
                 <p class="text-sm text-gray-400">Categorías:
                     {% for tag in task.tags.all %}
                         {{ tag.name }}{% if not forloop.last %}, {% endif %}
@@ -105,6 +110,10 @@
             border-radius: 50%;
             display: block;
         }
+        .status-select {
+            border: none;
+            outline: none;
+        }
     </style>
     <script>
         document.getElementById('notification-bell').addEventListener('click', function() {
@@ -144,6 +153,42 @@
                         }
                         document.getElementById('unread-count-panel').textContent = count;
                     }
+                });
+            });
+        });
+
+        // AJAX para actualizar el estado de la tarea
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const taskId = this.getAttribute('data-task-id');
+                const newStatus = this.value;
+                console.log('Enviando datos:', { taskId, newStatus }); // Depuración
+                fetch(`/update_task_status/${taskId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }), // Aseguramos que se envíe como JSON
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const statusElement = this.previousElementSibling;
+                        statusElement.textContent = `Estado: ${data.status}`;
+                    } else {
+                        alert(`Error al actualizar el estado: ${data.error || 'Desconocido'}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la petición AJAX:', error);
+                    alert('Error en la conexión o en el servidor. Revisa la consola para más detalles.');
                 });
             });
         });
