@@ -12,6 +12,7 @@ urlpatterns = [
     path('create_task/', views.create_task, name='create_task'),
     path('edit_task/<int:task_id>/', views.edit_task, name='edit_task'),
     path('delete_task/<int:task_id>/', views.delete_task, name='delete_task'),
+    path('create_tag/', views.create_tag, name='create_tag'),
     path('', views.home, name='home'),      
     path('accounts/login/', CustomLoginView.as_view(), name='login'),
     path('accounts/logout/', CustomLogoutView.as_view(), name='logout'),

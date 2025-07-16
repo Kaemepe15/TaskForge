@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
-from .forms import CustomUserCreationForm, TaskForm
+from .forms import CustomUserCreationForm, TaskForm, TagForm
 from django.contrib.auth.decorators import login_required
-from .models import Task
+from .models import Task, Tag
 from django.contrib.auth.views import (
     LoginView, LogoutView, PasswordResetView, PasswordResetDoneView,
     PasswordResetConfirmView, PasswordResetCompleteView
@@ -63,6 +63,19 @@ def delete_task(request, task_id):
         task.delete()
         return redirect('dashboard')
     return render(request, 'tasks/delete_task.html', {'task': task})
+
+@login_required
+def create_tag(request):
+    if request.method == 'POST':
+        form = TagForm(request.POST)
+        if form.is_valid():
+            tag = form.save(commit=False)
+            tag.created_by = request.user
+            tag.save()
+            return redirect('dashboard')
+    else:
+        form = TagForm()
+    return render(request, 'tasks/create_tag.html', {'form': form})
 
 def register(request):
     if request.method == "POST":

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2 class="text-3xl font-bold mb-6 text-center">Crear Nueva Categoría</h2>
+    <form method="post" class="space-y-4 max-w-md mx-auto">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="w-full bg-white text-purple-900 p-2 rounded-full mt-4">Crear Categoría</button>
+        <a href="{% url 'dashboard' %}" class="block text-center text-blue-200 mt-2">Cancelar</a>
+    </form>
+{% endblock %}

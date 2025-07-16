@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Task
+from .models import Task, Tag
 
 class CustomUserCreationForm(UserCreationForm):                    # Formulario para la creación de usuario
     email = forms.EmailField(required=True)
@@ -24,4 +24,10 @@ class TaskForm(forms.ModelForm):
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'background_color': forms.TextInput(attrs={'type': 'color'}),
+            'tags': forms.CheckboxSelectMultiple(),
         }
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ['name']
