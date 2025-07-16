@@ -1,7 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2 class="text-3xl font-bold mb-6 text-center">Mis Tareas</h2>
-    <div class="mb-6 text-center flex justify-center items-center">
+    <div class="mb-6 text-center flex justify-center items-center space-x-4">
+        <!-- Formulario de filtros -->
+        <form id="filter-form" class="flex space-x-2">
+            <select name="status" class="bg-gray-800 text-white p-2 rounded">
+                <option value="">Todos los estados</option>
+                <option value="pending">Pendiente</option>
+                <option value="in_progress">En Progreso</option>
+                <option value="completed">Completada</option>
+            </select>
+            <input type="date" name="due_date" class="bg-gray-800 text-white p-2 rounded">
+            <select name="priority" class="bg-gray-800 text-white p-2 rounded">
+                <option value="">Todas las prioridades</option>
+                <option value="low">Baja</option>
+                <option value="medium">Media</option>
+                <option value="high">Alta</option>
+            </select>
+            <button type="submit" class="bg-white text-purple-900 p-2 rounded-full">Filtrar</button>
+        </form>
+        <!-- Botones -->
         <a href="{% url 'create_task' %}" class="bg-white text-purple-900 p-2 rounded-full inline-block mr-2">Crear Nueva Tarea</a>
         <a href="{% url 'create_tag' %}" class="bg-white text-purple-900 p-2 rounded-full inline-block">Crear Nueva Categoría</a>
         <!-- Botón de notificaciones -->
@@ -30,7 +48,7 @@
         {% endif %}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for task, urgency in tasks_with_urgencies %}
             <div class="translucent-card p-4 rounded shadow relative">
                 <span class="urgency-indicator {% if urgency == 'overdue' %}bg-red-500{% elif urgency == 'high' %}bg-yellow-500{% elif urgency == 'medium' %}bg-green-500{% else %}bg-blue-500{% endif %}"></span>
@@ -42,7 +60,7 @@
                     <option value="En Progreso" {% if task.status == 'in_progress' %}selected{% endif %}>En Progreso</option>
                     <option value="Completada" {% if task.status == 'completed' %}selected{% endif %}>Completada</option>
                 </select>
-                <p class="text-sm text-gray-400">Vence: {{ due_date|date:"F d, Y" }}</p>
+                <p class="text-sm text-gray-400">Vence: {{ task.due_date|date:"F d, Y" }}</p>
                 <p class="text-sm text-gray-400">Categorías:
                     {% for tag in task.tags.all %}
                         {{ tag.name }}{% if not forloop.last %}, {% endif %}
@@ -53,8 +71,6 @@
                     <a href="{% url 'delete_task' task.id %}" class="text-red-200">Eliminar</a>
                 </div>
             </div>
-        {% empty %}
-            <p class="text-center text-gray-200">No hay tareas.</p>
         {% endfor %}
     </div>
 
@@ -116,6 +132,10 @@
         }
     </style>
     <script>
+        // Definir URLs como variables JavaScript
+        const editTaskUrl = "{% url 'edit_task' 0 %}".replace(/0$/, '');
+        const deleteTaskUrl = "{% url 'delete_task' 0 %}".replace(/0$/, '');
+
         document.getElementById('notification-bell').addEventListener('click', function() {
             const panel = document.getElementById('notification-panel');
             panel.classList.toggle('hidden');
@@ -162,7 +182,7 @@
             select.addEventListener('change', function() {
                 const taskId = this.getAttribute('data-task-id');
                 const newStatus = this.value;
-                console.log('Enviando datos:', { taskId, newStatus }); // Depuración
+                console.log('Enviando datos:', { taskId, newStatus });
                 fetch(`/update_task_status/${taskId}/`, {
                     method: 'POST',
                     headers: {
@@ -170,7 +190,7 @@
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ status: newStatus }), // Aseguramos que se envíe como JSON
+                    body: JSON.stringify({ status: newStatus }),
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -190,6 +210,55 @@
                     console.error('Error en la petición AJAX:', error);
                     alert('Error en la conexión o en el servidor. Revisa la consola para más detalles.');
                 });
+            });
+        });
+
+        // AJAX para aplicar filtros
+        document.getElementById('filter-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData).toString();
+            fetch(`/dashboard/?${params}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById('tasks-container');
+                container.innerHTML = '';
+                data.tasks.forEach(task => {
+                    const div = document.createElement('div');
+                    div.className = 'translucent-card p-4 rounded shadow relative';
+                    div.innerHTML = `
+                        <span class="urgency-indicator ${task.urgency === 'overdue' ? 'bg-red-500' : task.urgency === 'high' ? 'bg-yellow-500' : task.urgency === 'medium' ? 'bg-green-500' : 'bg-blue-500'}"></span>
+                        <h3 class="text-lg font-semibold">${task.title}</h3>
+                        <p class="text-gray-200">${task.description || ''}</p>
+                        <p class="text-sm text-gray-400">Estado: ${task.status}</p>
+                        <select class="status-select bg-gray-800 text-white p-1 rounded mt-2" data-task-id="${task.id}">
+                            <option value="Pendiente" ${task.status === 'pending' ? 'selected' : ''}>Pendiente</option>
+                            <option value="En Progreso" ${task.status === 'in_progress' ? 'selected' : ''}>En Progreso</option>
+                            <option value="Completada" ${task.status === 'completed' ? 'selected' : ''}>Completada</option>
+                        </select>
+                        <p class="text-sm text-gray-400">Vence: ${task.due_date}</p>
+                        <p class="text-sm text-gray-400">Categorías: ${task.tags.join(', ') || 'Ninguna'}</p>
+                        <div class="mt-2">
+                            <a href="${editTaskUrl}${task.id}/" class="text-blue-200 mr-2">Editar</a>
+                            <a href="${deleteTaskUrl}${task.id}/" class="text-red-200">Eliminar</a>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            })
+            .catch(error => {
+                console.error('Error al aplicar filtros:', error);
+                alert('Error al aplicar filtros. Revisa la consola para más detalles.');
             });
         });
     </script>

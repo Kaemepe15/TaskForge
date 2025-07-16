@@ -35,6 +35,43 @@ def dashboard(request):
     unread_count = 0
     task_urgencies = []  # Lista de tuplas (task, urgency)
 
+    # Procesar filtros si es una petición AJAX
+    status_filter = request.GET.get('status', '')
+    due_date_filter = request.GET.get('due_date', '')
+    priority_filter = request.GET.get('priority', '')
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        filtered_tasks = Task.objects.filter(user=request.user)
+        if status_filter:
+            filtered_tasks = filtered_tasks.filter(status=status_filter)
+        if due_date_filter:
+            filtered_tasks = filtered_tasks.filter(due_date__date=due_date_filter)
+        if priority_filter:
+            filtered_tasks = filtered_tasks.filter(priority=priority_filter)
+
+        task_data = []
+        for task in filtered_tasks:
+            due_date_str = task.due_date.strftime('%Y-%m-%dT%H:%M')
+            time_diff = (time.mktime(time.strptime(due_date_str, '%Y-%m-%dT%H:%M')) - 
+                        time.mktime(time.strptime(time.strftime('%Y-%m-%dT%H:%M'), '%Y-%m-%dT%H:%M')))
+            urgency = 'low'
+            if time_diff <= 0:
+                urgency = 'overdue'
+            elif 0 < time_diff <= 86400:
+                urgency = 'high'
+            elif 86400 < time_diff <= 172800:
+                urgency = 'medium'
+            task_data.append({
+                'id': task.id,
+                'title': task.title,
+                'description': task.description,
+                'status': task.status,
+                'due_date': task.due_date.strftime('%Y-%m-%d'),
+                'tags': [tag.name for tag in task.tags.all()],
+                'urgency': urgency
+            })
+        return JsonResponse({'tasks': task_data})
+
     current_datetime = time.strftime('%Y-%m-%dT%H:%M')
     print(f"Current datetime: {current_datetime}")  # Depuración
     for task in tasks:
@@ -66,7 +103,7 @@ def dashboard(request):
         print(f"Task: {task.title}, Urgency: {urgency}")  # Depuración
 
     return render(request, 'tasks/dashboard.html', {
-        'tasks_with_urgencies': task_urgencies,  # Cambiar a tasks_with_urgencies
+        'tasks_with_urgencies': task_urgencies,
         'notifications': notifications,
         'unread_count': unread_count
     })
