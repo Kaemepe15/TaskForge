@@ -24,8 +24,10 @@ class Task(models.Model):                       # Modelo para las tareas
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     due_date = models.DateTimeField()
     tags = models.CharField(max_length=200, blank=True)
+    background_color = models.CharField(max_length=7, default='#4A5568')  # Valor por defecto gris oscuro (ejemplo)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
 
     def __str__(self):
         return self.title

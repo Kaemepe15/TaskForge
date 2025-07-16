@@ -1,0 +1,23 @@
+label {
+    color: #D1D5DB;
+}
+input,
+textarea,
+select {
+    color: #D1D5DB;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: #D1D5DB;
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #93C5FD;
+    box-shadow: 0 0 5px rgba(147, 197, 253, 0.5);
+}
+input::placeholder,
+textarea::placeholder {
+    color: #9CA3AF;
+}
