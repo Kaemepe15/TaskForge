@@ -34,15 +34,16 @@ def dashboard(request):
 @login_required
 def create_task(request):
     if request.method == 'POST':
-        form = TaskForm(request.POST)
+        form = TaskForm(request.POST, user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
             task.user = request.user
             task.save()
             return redirect('dashboard')
     else:
-        form = TaskForm()
+        form = TaskForm(user=request.user)
     return render(request, 'tasks/create_task.html', {'form': form})
+
 
 @login_required
 def edit_task(request, task_id):
