@@ -31,8 +31,9 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for task in tasks %}
-            <div class="translucent-card p-4 rounded shadow">
+        {% for task, urgency in tasks_with_urgencies %}
+            <div class="translucent-card p-4 rounded shadow relative">
+                <span class="urgency-indicator {% if urgency == 'overdue' %}bg-red-500{% elif urgency == 'high' %}bg-yellow-500{% elif urgency == 'medium' %}bg-green-500{% else %}bg-blue-500{% endif %}"></span>
                 <h3 class="text-lg font-semibold">{{ task.title }}</h3>
                 <p class="text-gray-200">{{ task.description }}</p>
                 <p class="text-sm text-gray-400">Estado: {{ task.status }}</p>
@@ -95,6 +96,15 @@
         .mark-read-btn:hover {
             text-decoration: underline;
         }
+        .urgency-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: block;
+        }
     </style>
     <script>
         document.getElementById('notification-bell').addEventListener('click', function() {
@@ -110,7 +120,6 @@
             }
         });
 
-        // Marcar notificación como leída
         document.querySelectorAll('.mark-read-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const notificationId = this.getAttribute('data-id');
@@ -125,7 +134,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        this.parentElement.style.display = 'none'; // Ocultar la notificación
+                        this.parentElement.style.display = 'none';
                         let unreadCount = document.querySelector('.notification-dot');
                         let count = parseInt(unreadCount ? unreadCount.textContent : 0) - 1;
                         if (unreadCount && count > 0) {

@@ -33,6 +33,7 @@ def dashboard(request):
     tasks = Task.objects.filter(user=request.user)
     notifications = []
     unread_count = 0
+    task_urgencies = []  # Lista de tuplas (task, urgency)
 
     current_datetime = time.strftime('%Y-%m-%dT%H:%M')
     print(f"Current datetime: {current_datetime}")  # Depuración
@@ -42,7 +43,7 @@ def dashboard(request):
         time_diff = (time.mktime(time.strptime(due_date_str, '%Y-%m-%dT%H:%M')) - 
                      time.mktime(time.strptime(current_datetime, '%Y-%m-%dT%H:%M')))
         print(f"Time difference (seconds): {time_diff}")  # Depuración
-        if 0 < time_diff <= 86400:  # Si está entre 0 y 24 horas
+        if 0 < time_diff <= 86400:  # Menos de 24 horas
             notification, created = Notification.objects.get_or_create(
                 task=task,
                 defaults={'message': f'La tarea "{task.title}" vence en menos de 24 horas.'}
@@ -52,14 +53,23 @@ def dashboard(request):
                 if not notification.is_read:
                     unread_count += 1
             print(f"Notification created/added for {task.title}, is_read: {notification.is_read}")  # Depuración
+        # Calcular urgencia
+        if time_diff <= 0:
+            urgency = 'overdue'
+        elif 0 < time_diff <= 86400:
+            urgency = 'high'
+        elif 86400 < time_diff <= 172800:
+            urgency = 'medium'
+        else:
+            urgency = 'low'
+        task_urgencies.append((task, urgency))  # Añadir tupla (task, urgency)
+        print(f"Task: {task.title}, Urgency: {urgency}")  # Depuración
 
     return render(request, 'tasks/dashboard.html', {
-        'tasks': tasks,
+        'tasks_with_urgencies': task_urgencies,  # Cambiar a tasks_with_urgencies
         'notifications': notifications,
         'unread_count': unread_count
     })
-
-# ... (código previo) ...
 
 @login_required
 def mark_notification_as_read(request, notification_id):

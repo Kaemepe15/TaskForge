@@ -20,7 +20,7 @@
             border-radius: 15px;
             padding: 2rem;
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            /* Temporalmente quitado: border: 1px solid rgba(255, 255, 255, 0.2); */
         }
         nav {
             background-color: #060126; /* Nuevo color azul oscuro personalizado */
@@ -45,5 +45,9 @@
             {% block content %}{% endblock %}
         </div>
     </div>
+    <!-- Formulario oculto para CSRF -->
+    <form method="post" id="csrf-form" style="display: none;">
+        {% csrf_token %}
+    </form>
 </body>
 </html>
