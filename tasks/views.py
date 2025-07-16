@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm, TaskForm, TagForm
 from django.contrib.auth.decorators import login_required
-from .models import Task, Tag
+from .models import Task, Tag, Notification
 from django.contrib.auth.views import (
     LoginView, LogoutView, PasswordResetView, PasswordResetDoneView,
     PasswordResetConfirmView, PasswordResetCompleteView
 )
 from django.urls import reverse_lazy
+import time
 
 # Create your views here.
 
@@ -29,7 +30,28 @@ def home(request):
 @login_required
 def dashboard(request):
     tasks = Task.objects.filter(user=request.user)
-    return render(request, 'tasks/dashboard.html', {'tasks': tasks})
+    notifications = []
+
+    current_datetime = time.strftime('%Y-%m-%dT%H:%M')
+    print(f"Current datetime: {current_datetime}")  # Depuración
+    for task in tasks:
+        due_date_str = task.due_date.strftime('%Y-%m-%dT%H:%M')
+        print(f"Task: {task.title}, Due date: {due_date_str}")  # Depuración
+        time_diff = (time.mktime(time.strptime(due_date_str, '%Y-%m-%dT%H:%M')) - 
+                     time.mktime(time.strptime(current_datetime, '%Y-%m-%dT%H:%M')))
+        print(f"Time difference (seconds): {time_diff}")  # Depuración
+        if 0 < time_diff <= 86400:  # Si está entre 0 y 24 horas
+            notification, created = Notification.objects.get_or_create(
+                task=task,
+                defaults={'message': f'La tarea "{task.title}" vence en menos de 24 horas.'}
+            )
+            if created:
+                notifications.append(notification)
+            else:
+                notifications.append(notification)  # Añadir incluso si ya existe para mostrarla
+            print(f"Notification created/added for {task.title}")  # Depuración
+
+    return render(request, 'tasks/dashboard.html', {'tasks': tasks, 'notifications': notifications})
 
 @login_required
 def create_task(request):

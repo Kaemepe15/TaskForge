@@ -1,10 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2 class="text-3xl font-bold mb-6 text-center">Mis Tareas</h2>
-    <div class="mb-6 text-center">
+    <div class="mb-6 text-center flex justify-center items-center">
         <a href="{% url 'create_task' %}" class="bg-white text-purple-900 p-2 rounded-full inline-block mr-2">Crear Nueva Tarea</a>
         <a href="{% url 'create_tag' %}" class="bg-white text-purple-900 p-2 rounded-full inline-block">Crear Nueva Categoría</a>
+        <!-- Botón de notificaciones -->
+        <button id="notification-bell" class="bg-white text-purple-900 p-2 rounded-full inline-block ml-2 relative">
+            <span class="bell-icon"></span>
+            {% if notifications|length > 0 %}
+                <span class="notification-dot"></span>
+            {% endif %}
+        </button>
     </div>
+
+    <!-- Cuadro de notificaciones -->
+    <div id="notification-panel" class="hidden absolute right-4 top-16 bg-gray-800 text-white p-4 rounded shadow-lg w-64 z-10">
+        <h3 class="text-lg font-semibold mb-2">Notificaciones</h3>
+        {% if notifications %}
+            <ul class="list-disc pl-5 space-y-2">
+                {% for notification in notifications %}
+                    <li>{{ notification.message }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hay notificaciones.</p>
+        {% endif %}
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for task in tasks %}
             <div class="translucent-card p-4 rounded shadow">
@@ -26,4 +48,55 @@
             <p class="text-center text-gray-200">No hay tareas.</p>
         {% endfor %}
     </div>
+
+    <!-- Estilos y JavaScript -->
+    <style>
+        .bell-icon {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #4A5568;
+            position: relative;
+        }
+        .bell-icon::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 4px;
+            background-color: #fff;
+            top: 2px;
+            left: 5px;
+            transform: rotate(45deg);
+        }
+        .notification-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: red;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+        }
+        #notification-panel {
+            border: 1px solid #4A5568;
+        }
+        #notification-panel ul li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    <script>
+        document.getElementById('notification-bell').addEventListener('click', function() {
+            const panel = document.getElementById('notification-panel');
+            panel.classList.toggle('hidden');
+        });
+        // Ocultar el panel si se hace clic fuera
+        document.addEventListener('click', function(event) {
+            const bell = document.getElementById('notification-bell');
+            const panel = document.getElementById('notification-panel');
+            if (!bell.contains(event.target) && !panel.contains(event.target)) {
+                panel.classList.add('hidden');
+            }
+        });
+    </script>
 {% endblock %}

@@ -9,6 +9,15 @@ class Tag(models.Model):  # Modelo para las categorías o etiquetas
     def __str__(self):
         return self.name
 
+class Notification(models.Model):
+    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notificación para {self.task.title}"
+
 class Task(models.Model):                       # Modelo para las tareas
     STATUS_CHOICES = [                          # Estado de las tareas
         ('pending', 'Pendiente'),               # Estado - pendiente
