@@ -13,21 +13,23 @@ from django.http import JsonResponse
 
 # Create your views here.
 
+# Vista para el login
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
     redirect_authenticated_user = True
     success_url = reverse_lazy('home')
 
+# Vista para cerrar sesión
 class CustomLogoutView(LogoutView):
     template_name = 'registration/logout.html'
     next_page = reverse_lazy('home')
 
+# Vista de pagina principal
 @login_required
 def home(request):
     return render(request, 'tasks/home.html')
 
-# Dashboard
-
+# Vista de Dashboard
 @login_required
 def dashboard(request):
     tasks = Task.objects.filter(user=request.user)
@@ -108,6 +110,7 @@ def dashboard(request):
         'unread_count': unread_count
     })
 
+# Vista de notificación 
 @login_required
 def mark_notification_as_read(request, notification_id):
     if request.method == 'POST':
@@ -117,6 +120,7 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
+# Vista para crear tarea
 @login_required
 def create_task(request):
     if request.method == 'POST':
@@ -131,6 +135,7 @@ def create_task(request):
     return render(request, 'tasks/create_task.html', {'form': form})
 
 
+# Vista para editar tarea
 @login_required
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
@@ -143,6 +148,7 @@ def edit_task(request, task_id):
         form = TaskForm(instance=task)
     return render(request, 'tasks/edit_task.html', {'form': form, 'task': task})
 
+# Vista para eliminar tarea
 @login_required
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
@@ -151,6 +157,7 @@ def delete_task(request, task_id):
         return redirect('dashboard')
     return render(request, 'tasks/delete_task.html', {'task': task})
 
+# Vista para crear tag
 @login_required
 def create_tag(request):
     if request.method == 'POST':
@@ -164,6 +171,7 @@ def create_tag(request):
         form = TagForm()
     return render(request, 'tasks/create_tag.html', {'form': form})
 
+# Vista para actualizar estado de la tarea
 @login_required
 def update_task_status(request, task_id):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -188,6 +196,7 @@ def update_task_status(request, task_id):
         return JsonResponse({'success': False, 'error': 'Estado no válido'}, status=400)
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
+# Vista para registrarse
 def register(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
@@ -199,6 +208,7 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+# Conjuntos de Vistas para resetear password
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     email_template_name = 'registration/password_reset_email.html'

@@ -4,7 +4,8 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import Task, Tag
 import time
 
-class CustomUserCreationForm(UserCreationForm):                    # Formulario para la creación de usuario
+# Formulario para la creación de usuario
+class CustomUserCreationForm(UserCreationForm):                    
     email = forms.EmailField(required=True)
 
     class Meta:
@@ -18,6 +19,7 @@ class CustomUserCreationForm(UserCreationForm):                    # Formulario 
             user.save()
         return user
 
+# Formulario para crear tarea
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
@@ -45,6 +47,7 @@ class TaskForm(forms.ModelForm):
                 raise forms.ValidationError("La fecha límite no puede ser anterior a la fecha actual.")
         return due_date
 
+# Formulario para crear tag o etiqueta
 class TagForm(forms.ModelForm):
     class Meta:
         model = Tag

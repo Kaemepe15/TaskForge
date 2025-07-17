@@ -2,13 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 # Create your models here.
 
-class Tag(models.Model):  # Modelo para las categorías o etiquetas
+# Modelos para los tags o etiquetas
+class Tag(models.Model):  
     name = models.CharField(max_length=50, unique=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
+# Modelo para notificación
 class Notification(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     message = models.TextField()
@@ -18,6 +20,7 @@ class Notification(models.Model):
     def __str__(self):
         return f"Notificación para {self.task.title}"
 
+# Modelo para las tareas
 class Task(models.Model):                       # Modelo para las tareas
     STATUS_CHOICES = [                          # Estado de las tareas
         ('pending', 'Pendiente'),               # Estado - pendiente
